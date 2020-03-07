@@ -8,6 +8,9 @@ from flask_cors import CORS
 
 import os
 import re
+import logging
+
+logger = logging.getLogger()
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -15,14 +18,14 @@ csv_files = []
 data_files = []
 df = pd.DataFrame()
 
-for root, dirs, files in os.walk("../data/"):
+for root, dirs, files in os.walk("./data/"):
     for filename in files:
       match = re.search(r'Payments_over_500', filename)
       if match:
         csv_files.append(filename)
 
 for file in csv_files:
-    filename = '../data/{}'.format(file)
+    filename = './data/{}'.format(file)
     print('Reading Data File: {}'.format(file))
     df = pd.read_csv('file:{}'.format(filename), encoding='utf-8')
     print('\t - Renaming Columns')
@@ -44,16 +47,21 @@ for file in csv_files:
     print('\t - Fix amount to float type')
     df.amount = (df.amount.replace(r'[\,)]','', regex=True ).astype(float))
 
-    print('\t - Auto infer for column types \n')
+    print('\t - Auto infer for column types')
     df.apply(lambda x: pd.api.types.infer_dtype(x.values))
 
+    print('\t - Shape {}\n'.format(df.shape))
+    print()
     data_files.append(df)
 
 for data in data_files:
-    df = pd.concat([df,data])
+    df = pd.concat([df,data], sort=True)
 
 print('Dropping NaN\'s \n')
 df = df.dropna()
+
+print(df.shape)
+print(df.info(verbose=True))
 
 
 @app.route("/payments/")
@@ -158,7 +166,7 @@ def payments_per_category_date(category, date_from, date_to):
 
 @app.route('/amountsByDepartmentCategory/<department>/<category>/')
 @app.route("/amountsByDepartmentCategory/<department>/<category>/<date_from>/<date_to>/")
-def amounts_per_department_category(department,category, date_from='06-04-2014', date_to='05-04-2019'):
+def amounts_per_department_category(department,category, date_from='2014-01-01', date_to='2019-12-31'):
     output_data = []
     df_date = df[df.date.between(date_from, date_to)]
     df_dept = df_date.loc[df_date['department'] == department]
@@ -175,7 +183,7 @@ def amounts_per_department_category(department,category, date_from='06-04-2014',
 
 @app.route("/departmentCategorySums/<department>")
 @app.route("/departmentCategorySums/<department>/<date_from>/<date_to>/")
-def department_category_sums(department, date_from='06-04-2014', date_to='05-04-2019'):
+def department_category_sums(department, date_from='2014-01-01', date_to='2019-12-31'):
     output_data = []
     df_date = df[df.date.between(date_from, date_to)]
     data = df_date.loc[df_date['department'] == department]

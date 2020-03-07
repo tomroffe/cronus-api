@@ -13,7 +13,12 @@ build:
 	docker tag $(NAME):$(VERSION) $(APP_IMAGE)
 .PHONY: build
 
-push: build
+run:
+	#docker run -p 8844:8844 -it cronus-api:latest gunicorn -w 1 -b 0.0.0.0:8844  backend.app:app
+	docker run -p 8844:8844 cronus-api
+.PHONY: run
+
+push: buildß
 	$(shell aws ecr get-login --no-include-email --region eu-west-1)
 	docker push $(APP_IMAGE)
 	#aws ecs update-service --cluster $(CLUSTER) --service $(NAME) --force-new-deployment
