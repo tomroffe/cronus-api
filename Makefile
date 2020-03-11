@@ -18,7 +18,7 @@ run:
 	docker run -p 8844:8844 cronus-api
 .PHONY: run
 
-push: buildß
+push: build
 	$(shell aws ecr get-login --no-include-email --region eu-west-1)
 	docker push $(APP_IMAGE)
 	#aws ecs update-service --cluster $(CLUSTER) --service $(NAME) --force-new-deployment
