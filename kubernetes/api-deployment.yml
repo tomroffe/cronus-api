@@ -15,7 +15,7 @@ spec:
       containers:
       - name: cronus-api
         image: 625174228527.dkr.ecr.eu-west-1.amazonaws.com/cronus-api:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: 8844
       imagePullSecrets:
